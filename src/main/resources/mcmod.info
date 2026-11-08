@@ -1,0 +1,11 @@
+
+[
+  {
+    "modid": "neonclient",
+    "name": "Neon Client",
+    "description": "Client Minecraft 1.8.9",
+    "version": "1.0",
+    "mcversion": "1.8.9",
+    "authorList": ["Neon"]
+  }
+]
