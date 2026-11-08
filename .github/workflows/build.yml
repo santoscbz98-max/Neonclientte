@@ -1,0 +1,32 @@
+name: Compilar Neon Client
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar projeto
+        uses: actions/checkout@v4
+
+      - name: Instalar Java 8
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '8'
+
+      - name: Compilar Neon Client
+        run: gradle build --no-daemon --stacktrace
+
+      - name: Enviar arquivo JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: Neon-Client
+          path: build/libs/*.jar
+          if-no-files-found: error
+          
