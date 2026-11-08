@@ -1,38 +1,37 @@
 
-name: Compilar Neon Client
+package br.neonclient;
 
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.KeyBinding;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.InputEvent;
+import net.minecraftforge.common.MinecraftForge;
+import org.lwjgl.input.Keyboard;
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+@Mod(modid = "neonclient", name = "Neon Client", version = "1.0")
+public class NeonClient {
 
-    steps:
-      - name: Baixar projeto
-        uses: actions/checkout@v4
+    private KeyBinding menuKey;
 
-      - name: Instalar Java 8
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '8'
+    @Mod.EventHandler
+    public void init(FMLInitializationEvent event) {
+        menuKey = new KeyBinding(
+            "Abrir Neon Menu",
+            Keyboard.KEY_RSHIFT,
+            "Neon Client"
+        );
 
-      - name: Instalar Gradle 2.14.1
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '2.14.1'
+        ClientRegistry.registerKeyBinding(menuKey);
+        MinecraftForge.EVENT_BUS.register(this);
+    }
 
-      - name: Compilar Neon Client
-        run: gradle build --no-daemon --stacktrace
-
-      - name: Enviar arquivo JAR
-        uses: actions/upload-artifact@v4
-        with:
-          name: Neon-Client
-          path: build/libs/*.jar
-          if-no-files-found: error
-          
+    @SubscribeEvent
+    public void onKey(InputEvent.KeyInputEvent event) {
+        while (menuKey.isPressed()) {
+            Minecraft.getMinecraft().displayGuiScreen(new NeonMenu());
+        }
+    }
+}
