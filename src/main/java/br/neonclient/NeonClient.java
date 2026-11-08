@@ -1,0 +1,37 @@
+
+package br.neonclient;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.KeyBinding;
+import net.minecraftforge.client.ClientRegistry;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.InputEvent;
+import net.minecraftforge.common.MinecraftForge;
+import org.lwjgl.input.Keyboard;
+
+@Mod(modid = "neonclient", name = "Neon Client", version = "1.0")
+public class NeonClient {
+
+    public static KeyBinding menuKey;
+
+    @Mod.EventHandler
+    public void init(FMLInitializationEvent event) {
+        menuKey = new KeyBinding(
+            "Abrir Neon Menu",
+            Keyboard.KEY_RSHIFT,
+            "Neon Client"
+        );
+
+        ClientRegistry.registerKeyBinding(menuKey);
+        MinecraftForge.EVENT_BUS.register(this);
+    }
+
+    @SubscribeEvent
+    public void onKey(InputEvent.KeyInputEvent event) {
+        if (menuKey.isPressed()) {
+            Minecraft.getMinecraft().displayGuiScreen(new NeonMenu());
+        }
+    }
+}
