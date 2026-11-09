@@ -1,4 +1,3 @@
-
 package br.neonclient;
 
 import net.minecraft.client.gui.GuiScreen;
@@ -14,13 +13,15 @@ public class NeonMenu extends GuiScreen {
         buttonList.add(new GuiButton(
             1,
             width / 2 - 100,
-            height / 2 - 20,
+            height / 2,
+            200,
+            30,
             "Fechar Neon Menu"
         ));
     }
 
     @Override
-    protected void actionPerformed(GuiButton button) {
+    public void actionPerformed(GuiButton button) {
         if (button.id == 1) {
             Minecraft.getMinecraft().displayGuiScreen(null);
         }
