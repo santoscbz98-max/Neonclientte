@@ -1,162 +1,39 @@
 
-package br.neonclient;
+name: Compilar Neon Client
 
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.item.ItemStack;
-import net.minecraft.init.Items;
-import java.util.HashMap;
-import java.util.Map;
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
-public class NeonMenu extends GuiScreen {
+jobs:
+  build:
+    name: Compilar
+    runs-on: ubuntu-latest
 
-    private String category = "Combat";
-    private final Map<String, Boolean> modules = new HashMap<String, Boolean>();
+    steps:
+      - name: Baixar projeto
+        uses: actions/checkout@v4
 
-    private final String[] categories = {
-        "Combat", "Movement", "Player", "Render", "HUD"
-    };
+      - name: Instalar Java 8
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
 
-    private final String[][] options = {
-        {"KillAura", "Aim Assist"},
-        {"Sprint", "Speed"},
-        {"AutoClicker", "Sneak"},
-        {"ESP", "Fullbright"},
-        {"FPS", "CPS", "Coordinates", "Keystrokes"}
-    };
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '2.14.1'
 
-    private final ItemStack[][] icons = {
-        {new ItemStack(Items.diamond_sword), new ItemStack(Items.bow)},
-        {new ItemStack(Items.feather), new ItemStack(Items.diamond_boots)},
-        {new ItemStack(Items.clock), new ItemStack(Items.leather_boots)},
-        {new ItemStack(Items.ender_eye), new ItemStack(Items.torch)},
-        {new ItemStack(Items.clock), new ItemStack(Items.redstone),
-         new ItemStack(Items.compass), new ItemStack(Items.map)}
-    };
+      - name: Compilar Neon Client
+        run: gradle clean build --no-daemon
 
-    @Override
-    public void initGui() {
-        for (String[] group : options) {
-            for (String name : group) {
-                if (!modules.containsKey(name)) {
-                    modules.put(name, false);
-                }
-            }
-        }
-    }
-
-    private int getCategoryIndex() {
-        for (int i = 0; i < categories.length; i++) {
-            if (categories[i].equals(category)) return i;
-        }
-        return 0;
-    }
-
-    @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton)
-            throws java.io.IOException {
-        super.mouseClicked(mouseX, mouseY, mouseButton);
-
-        if (mouseButton != 0) return;
-
-        int left = width / 2 - 180;
-        int top = height / 2 - 110;
-
-        for (int i = 0; i < categories.length; i++) {
-            int y = top + 42 + i * 32;
-
-            if (mouseX >= left + 10 && mouseX <= left + 112
-                    && mouseY >= y && mouseY <= y + 26) {
-                category = categories[i];
-                return;
-            }
-        }
-
-        int index = getCategoryIndex();
-
-        for (int i = 0; i < options[index].length; i++) {
-            int x = left + 130 + (i % 2) * 145;
-            int y = top + 48 + (i / 2) * 58;
-
-            if (mouseX >= x && mouseX <= x + 135
-                    && mouseY >= y && mouseY <= y + 46) {
-                String name = options[index][i];
-                modules.put(name, !modules.get(name));
-                return;
-            }
-        }
-    }
-
-    @Override
-    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        drawDefaultBackground();
-
-        int left = width / 2 - 180;
-        int top = height / 2 - 110;
-
-        drawRect(left - 2, top - 2, left + 362, top + 222, 0xFF00DFFF);
-        drawRect(left, top, left + 360, top + 220, 0xF010121B);
-        drawRect(left, top, left + 360, top + 28, 0xFF171D2B);
-
-        drawCenteredString(fontRendererObj, "NEON CLIENT",
-                width / 2, top + 9, 0xFF00FFFF);
-
-        drawRect(left + 120, top + 35, left + 121, top + 210, 0xFF263746);
-
-        for (int i = 0; i < categories.length; i++) {
-            int y = top + 42 + i * 32;
-            boolean selected = categories[i].equals(category);
-
-            drawRect(left + 10, y, left + 112, y + 26,
-                    selected ? 0xFF006B83 : 0xFF202532);
-
-            drawString(fontRendererObj, categories[i],
-                    left + 20, y + 9, selected ? 0xFFFFFFFF : 0xFFAAAAAA);
-        }
-
-        int index = getCategoryIndex();
-
-        for (int i = 0; i < options[index].length; i++) {
-            int x = left + 130 + (i % 2) * 145;
-            int y = top + 48 + (i / 2) * 58;
-
-            String name = options[index][i];
-            boolean active = modules.get(name);
-            boolean hover = mouseX >= x && mouseX <= x + 135
-                    && mouseY >= y && mouseY <= y + 46;
-
-            drawRect(x, y, x + 135, y + 46,
-                    hover ? 0xFF273849 : 0xFF1B202D);
-
-            drawRect(x, y, x + 135, y + 2,
-                    active ? 0xFF00FFFF : 0xFF354050);
-
-            RenderHelper.enableGUIStandardItemLighting();
-            itemRender.renderItemAndEffectIntoGUI(
-                    icons[index][i], x + 7, y + 14);
-            RenderHelper.disableStandardItemLighting();
-
-            drawString(fontRendererObj, name,
-                    x + 30, y + 11, 0xFFFFFFFF);
-
-            drawRect(x + 80, y + 28, x + 127, y + 41,
-                    active ? 0xFF00AFC0 : 0xFF454B59);
-
-            drawCenteredString(fontRendererObj,
-                    active ? "ON" : "OFF",
-                    x + 103, y + 31,
-                    active ? 0xFFFFFFFF : 0xFFCCCCCC);
-        }
-
-        drawCenteredString(fontRendererObj,
-                "RIGHT SHIFT - CLOSE / OPEN",
-                width / 2, top + 205, 0xFF777777);
-
-        super.drawScreen(mouseX, mouseY, partialTicks);
-    }
-
-    @Override
-    public boolean doesGuiPauseGame() {
-        return false;
-    }
-}
+      - name: Salvar arquivo JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: Neon-Client
+          path: build/libs/*.jar
+          if-no-files-found: error
+          
